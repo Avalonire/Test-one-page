@@ -1,4 +1,4 @@
-# Test-one-page
+# One page web project
 Test Kotlin project with Selenide test coverage
 
 ## Sections
@@ -7,4 +7,5 @@ Test Kotlin project with Selenide test coverage
 
 ## Tests
 Project have selenide test coverage
+
 To run tests:
