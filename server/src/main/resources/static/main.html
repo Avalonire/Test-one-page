@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Avalon • One Page</title>
+    <style>
+        :root { --bg:#2b2b2b; --panel:#3a3a3a; --text:#ffffff; --muted:#cfcfcf; --border:rgba(255,255,255,.7); }
+        * { box-sizing: border-box; }
+        body {
+          margin: 0; background: var(--bg); color: var(--text);
+          font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Helvetica, Arial;
+          min-height: 100svh; display: grid; place-items: center;
+        }
+        .phone {
+          width: 390px; max-width: 95vw; background: var(--panel);
+          border-radius: 28px; border: 1px solid var(--border);
+          box-shadow: 0 10px 24px rgba(0,0,0,0.35); padding: 20px;
+        }
+        h1 { margin: 6px 0 14px; font-size: 22px; text-align: center; }
+        .section { margin: 16px 0; padding: 12px; border: 1px solid var(--border); border-radius: 16px; }
+        .label { display:block; font-size:12px; color: var(--muted); margin-bottom: 8px; }
+        button {
+          width: 100%; padding: 12px 14px; border-radius: 14px; cursor: pointer;
+          border: 1px solid var(--border); background: transparent; color: var(--text);
+          font-weight: 600; font-size: 16px;
+        }
+        button + button { margin-top: 10px; }
+        /* If the first button is hidden, don't add extra gap before the second */
+        button[hidden] + button { margin-top: 0; }
+
+        button:active { transform: translateY(1px); }
+        .btn-sub { display:block; font-size:12px; color: var(--muted); font-weight:500; }
+        .row { display: grid; grid-template-columns: 1fr 150px; gap: 12px; align-items: start; }
+        .actions { grid-column: 1 / 2; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 8px; }
+        .field { margin-bottom: 10px; }
+        input[type="text"], input[type="password"] {
+          width: 100%; padding: 10px 12px; border-radius: 12px;
+          border: 1px solid var(--border); background: transparent; color: var(--text);
+          outline: none; font-size: 14px;
+        }
+        .square {
+          width: 150px; height: 150px; border: 2px solid var(--border); border-radius: 12px;
+          display: grid; place-items: center; padding: 10px; text-align: center; word-break: break-word; font-size: 13px;
+        }
+        .muted { color: var(--muted); font-size: 13px; }
+        .mono { font-family: ui-monospace, Menlo, Consolas, monospace; }
+    </style>
+</head>
+<body>
+<main class="phone">
+    <h1>Simple Web by Avalon</h1>
+
+    <section class="section">
+        <div class="label">Random Number generator</div>
+
+        <!-- Client-side button (always available) -->
+        <button id="randomClientButton">
+            Generate random number
+            <span class="btn-sub">(client-side)</span>
+        </button>
+
+        <!-- Server-side button (hidden until successful login) -->
+        <button id="randomServerButton" hidden>
+            Generate random number
+            <span class="btn-sub">(server-side)</span>
+        </button>
+
+        <p class="muted" id="randomOutClient" style="margin:10px 0 0;"></p>
+        <p class="muted" id="randomOutServer" style="margin:10px 0 0;"></p>
+
+    </section>
+
+    <section class="section">
+        <div class="label">Fake Login / Password</div>
+        <div class="row">
+            <!-- Left column: inputs -->
+            <div>
+                <div class="field">
+                    <label class="muted">Login</label>
+                    <label for="login"></label><input id="login" type="text" placeholder="Type any Login"/>
+                </div>
+                <div class="field">
+                    <label class="muted">Password</label>
+                    <label for="password"></label><input id="password" type="password" placeholder="Type any Password"/>
+                </div>
+            </div>
+
+            <!-- Right column: fixed square (always visible) -->
+            <div class="square mono" id="credentials">Waiting...</div>
+
+            <button id="loginButton" style="align-self:end; justify-self:left; width:auto;">
+                Login! Fake :(
+            </button>
+            <button id="signOutButton" style="align-self:end; justify-self:right; width:auto;">
+                Sign out...
+            </button>
+        </div>
+    </section>
+</main>
+
+<script>
+    // Escape helper
+    function esc(s) {
+      return String(s)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    // SERVER-SIDE random
+    document.getElementById("randomServerButton").addEventListener("click", function () {
+      const out = document.getElementById("randomOutServer");
+      out.textContent = "Loading…";
+      fetch("/api/random")
+        .then(r => { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+        .then(data => { out.textContent = "Server says: " + data.number; })
+        .catch(err => { out.textContent = "Error: " + err.message; });
+    });
+
+    // CLIENT-SIDE random
+    document.getElementById("randomClientButton").addEventListener("click", function () {
+      const out = document.getElementById("randomOutClient");
+      const num = Math.floor(Math.random() * 1_000_000);
+      out.textContent = "Client says: " + num;
+    });
+
+    function setNoCredSquare() {
+      document.getElementById("credentials").innerHTML = "Please enter both<br>login and<br>password.";
+    }
+
+    function setDefaultSquare() {
+      const el = document.getElementById("credentials");
+      el.textContent = "Waiting..."; // your default text
+    }
+
+
+    function showServerBtn(show) {
+      document.getElementById("randomServerButton").hidden = !show;
+    }
+
+    // Login / Sign out
+    document.getElementById("loginButton").addEventListener("click", function () {
+      const login = document.getElementById("login").value;
+      const pass = document.getElementById("password").value;
+      const result = document.getElementById("credentials");
+
+      if (!login || !pass) {
+        setNoCredSquare();
+        showServerBtn(false);
+        return;
+      }
+
+      result.innerHTML =
+        "<div><b>Login Successful!</b></div>" +
+        "<div class='muted'>Your Credentials:</div>" +
+        "<div>login: <b>" + esc(login) + "</b></div>" +
+        "<div>password: <b>" + esc(pass) + "</b></div>";
+
+      showServerBtn(true);
+    });
+
+    document.getElementById("signOutButton").addEventListener("click", function () {
+      document.getElementById("login").value = "";
+      document.getElementById("password").value = "";
+      document.getElementById("randomOutServer").textContent = "";
+      setDefaultSquare();
+      showServerBtn(false);
+    });
+</script>
+</body>
+</html>
