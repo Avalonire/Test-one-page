@@ -26,7 +26,6 @@
           font-weight: 600; font-size: 16px;
         }
         button + button { margin-top: 10px; }
-        /* If the first button is hidden, don't add extra gap before the second */
         button[hidden] + button { margin-top: 0; }
 
         button:active { transform: translateY(1px); }
@@ -100,7 +99,6 @@
 </main>
 
 <script>
-    // Escape helper
     function esc(s) {
       return String(s)
         .replace(/&/g, "&amp;")
@@ -133,7 +131,7 @@
 
     function setDefaultSquare() {
       const el = document.getElementById("credentials");
-      el.textContent = "Waiting..."; // your default text
+      el.textContent = "Waiting...";
     }
 
 
@@ -141,7 +139,7 @@
       document.getElementById("randomServerButton").hidden = !show;
     }
 
-    // Login / Sign out
+    // Log In / Sign out
     document.getElementById("loginButton").addEventListener("click", function () {
       const login = document.getElementById("login").value;
       const pass = document.getElementById("password").value;
